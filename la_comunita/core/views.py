@@ -1,11 +1,11 @@
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 
-from .models import Community
-from .serializers import CommunitySerializer, UserSerializer
+from .models import Community, Group
+from .serializers import CommunitySerializer, UserSerializer, GroupSerializer
 
 
-class UserViewClass(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     """View that exposes the general methods for
     a user.
     """
@@ -18,3 +18,9 @@ class CommunityViewSet(viewsets.ModelViewSet):
     a community."""
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    """View that exposes the API for the groups."""
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
