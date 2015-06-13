@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import Community, Group, PrivateChat, GroupChat, Message
+from .models import Community, Group, Chat, Message
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -14,15 +14,10 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
                 .HyperlinkedRelatedField(many=True,
                                          view_name='group-detail',
                                          queryset=Group.objects.all()))
-    private_chats = (serializers
-                     .HyperlinkedRelatedField(
-                         many=True,
-                         view_name='privatechat-detail',
-                         queryset=PrivateChat.objects.all()))
-    group_chats = (serializers
-                   .HyperlinkedRelatedField(many=True,
-                                            view_name='groupchat-detail',
-                                            queryset=GroupChat.objects.all()))
+    chats = (serializers
+             .HyperlinkedRelatedField(many=True,
+                                      view_name='chat-detail',
+                                      queryset=Chat.objects.all()))
     seen_messages = (serializers
                      .HyperlinkedRelatedField(many=True,
                                               view_name='message-detail',
@@ -35,8 +30,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'last_login', 'communities',
-                  'c_groups', 'private_chats', 'group_chats',
-                  'seen_messages', 'sent_messages')
+                  'c_groups', 'chats', 'seen_messages', 'sent_messages')
 
 
 class JoinableSerializer(serializers.HyperlinkedModelSerializer):
@@ -64,42 +58,31 @@ class GroupSerializer(JoinableSerializer):
         fields = ('name', 'created_on', 'users', 'community')
 
 
+class ChatSerializer(JoinableSerializer):
+    """Serializer for a chat."""
+    messages = serializers.HyperlinkedRelatedField(many=True,
+                                                   read_only=True,
+                                                   view_name='message-detail')
+    group = serializers.HyperlinkedRelatedField(read_only=True,
+                                                view_name='group-detail')
+
+    class Meta:
+        model = Chat
+        fields = ('name', 'created_on', 'users', 'messages', 'group')
+
+
 class MessageSerializer(serializers.HyperlinkedModelSerializer):
     """Serializer for a message class."""
+    chat = (serializers
+            .HyperlinkedRelatedField(read_only=True,
+                                     view_name='message-detail'))
     sender = serializers.HyperlinkedRelatedField(read_only=True,
                                                  view_name='user-detail')
     seen_by = (serializers
                .HyperlinkedRelatedField(read_only=True,
                                         many=True,
                                         view_name='user-detail'))
-    chat = serializers.HyperlinkedRelatedField(read_only=True,
-                                               view_name='chat-detail')
 
     class Meta:
         model = Message
         fields = ('content', 'date_sent', 'sender', 'seen_by', 'chat')
-
-
-class ChatSerializer(JoinableSerializer):
-    """Serializer for a generic chat."""
-    messages = serializers.HyperlinkedRelatedField(many=True,
-                                                   read_only=True,
-                                                   view_name='message-detail')
-
-
-class PrivateChatSerializer(JoinableSerializer):
-    """Serializer for a private chat."""
-
-    class Meta:
-        model = PrivateChat
-        fields = ('name', 'created_on', 'users', 'messages')
-
-
-class GroupChatSerializer(JoinableSerializer):
-    """Serializer for a group chat."""
-    group = serializers.HyperlinkedRelatedField(read_only=True,
-                                                view_name='group-detail')
-
-    class Meta:
-        model = GroupChat
-        fields = ('name', 'created_on', 'users', 'messages', 'group')
