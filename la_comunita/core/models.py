@@ -1,7 +1,4 @@
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.fields import GenericRelation
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
@@ -52,45 +49,38 @@ class Group(Joinable):
                 super(Group, self).__str__())
 
 
-class Message(models.Model):
-    """Represents a message sent on the chat."""
-    date_sent = models.DateTimeField(auto_now_add=True)
-    content = models.TextField()
-    seen_by = models.ManyToManyField(User, related_name='seen_messages')
-    sender = models.ForeignKey(User, related_name='sent_messages')
-    chat_ct = models.ForeignKey(ContentType)
-    chat_oi = models.PositiveIntegerField()
-    chat = GenericForeignKey('chat_ct', 'chat_oi')
-
-
-class Chat(Joinable):
-    """Represents a generic chat between two or more entities."""
-
-    class Meta:
-        abstract = True
-
-
-class PrivateChat(Chat):
+class PrivateChat(Joinable):
     """Represents a private chat that is joined by exactly two users."""
-    messages = GenericRelation(Message,
-                               related_query_name='private_messages',
-                               content_type_field='chat_ct',
-                               object_id_field='chat_oi')
 
     class Meta:
         default_related_name = 'private_chats'
 
 
-class GroupChat(Chat):
+class GroupChat(Joinable):
     """Represents a chat that happens in a group. This type of chat
     can have many users and the messages are delivered to all
     of them.
     """
-    messages = GenericRelation(Message,
-                               related_query_name='group_messages',
-                               content_type_field='chat_ct',
-                               object_id_field='chat_oi')
     group = models.ForeignKey(Group, related_name='chats')
 
     class Meta:
         default_related_name = 'group_chats'
+
+
+class Message(models.Model):
+    """Represents a message sent on the chat."""
+    date_sent = models.DateTimeField(auto_now_add=True)
+    content = models.TextField()
+    sender = models.ForeignKey(User, related_name='%(class)s_sent')
+    seen_by = models.ManyToManyField(User, related_name='%(class)s_seen')
+
+    class Meta:
+        abstract = True
+
+
+class GroupMessage(Message):
+    chat = models.ForeignKey('GroupChat', related_name='messages')
+
+
+class PrivateMessage(Message):
+    chat = models.ForeignKey('PrivateChat', related_name='messages')
