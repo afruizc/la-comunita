@@ -49,38 +49,22 @@ class Group(Joinable):
                 super(Group, self).__str__())
 
 
-class PrivateChat(Joinable):
-    """Represents a private chat that is joined by exactly two users."""
-
-    class Meta:
-        default_related_name = 'private_chats'
-
-
-class GroupChat(Joinable):
+class Chat(Joinable):
     """Represents a chat that happens in a group. This type of chat
     can have many users and the messages are delivered to all
     of them.
     """
-    group = models.ForeignKey(Group, related_name='chats')
+    group = models.ForeignKey(Group, related_name='chats',
+                              blank=True, null=True)
 
     class Meta:
-        default_related_name = 'group_chats'
+        default_related_name = 'chats'
 
 
 class Message(models.Model):
     """Represents a message sent on the chat."""
     date_sent = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
-    sender = models.ForeignKey(User, related_name='%(class)s_sent')
-    seen_by = models.ManyToManyField(User, related_name='%(class)s_seen')
-
-    class Meta:
-        abstract = True
-
-
-class GroupMessage(Message):
-    chat = models.ForeignKey('GroupChat', related_name='messages')
-
-
-class PrivateMessage(Message):
-    chat = models.ForeignKey('PrivateChat', related_name='messages')
+    sender = models.ForeignKey(User, related_name='sent_messages')
+    seen_by = models.ManyToManyField(User, related_name='seen_messages')
+    chat = models.ForeignKey(Chat, related_name='messages')
