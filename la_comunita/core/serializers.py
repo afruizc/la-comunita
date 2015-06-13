@@ -6,10 +6,18 @@ from .models import Community, Group, PrivateChat, GroupChat, Message
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     """Represents the serialization of the user."""
-    # TODO: Add communities, groups, private_chats, group_chats
-    # seen_messages, sent_messages,
+    communities = serializers.HyperlinkedRelatedField(many=True)
+    c_groups = serializers.HyperlinkedRelatedField(many=True)
+    private_chats = serializers.HyperlinkedRelatedField(many=True)
+    group_chats = serializers.HyperlinkedRelatedField(many=True)
+    seen_messages = serializers.HyperlinkedRelatedField(many=True)
+    sent_messages = serializers.HyperlinkedRelatedField(many=True)
+
     class Meta:
         model = User
+        fields = ('username', 'last_login', 'communities',
+                  'c_groups', 'private_chats', 'group_chats',
+                  'seen_messages', 'sent_messages')
 
 
 class JoinableSerializer(serializers.HyperlinkedModelSerializer):
