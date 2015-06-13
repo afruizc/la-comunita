@@ -1,10 +1,9 @@
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 
-from .models import Community, Group, PrivateChat, GroupChat, Message
+from .models import Community, Group, Chat, Message
 from .serializers import (CommunitySerializer, UserSerializer, GroupSerializer,
-                          PrivateChatSerializer, GroupChatSerializer,
-                          MessageSerializer)
+                          ChatSerializer, MessageSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -28,16 +27,10 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
 
 
-class PrivateChatViewSet(viewsets.ModelViewSet):
+class ChatViewSet(viewsets.ModelViewSet):
     """Exposes the API for the private chats."""
-    queryset = PrivateChat.objects.all()
-    serializer_class = PrivateChatSerializer
-
-
-class GroupChatViewSet(viewsets.ModelViewSet):
-    """Exposes API for the group chats."""
-    queryset = GroupChat.objects.all()
-    serializer_class = GroupChatSerializer
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
 
 
 class MessageViewSet(viewsets.ModelViewSet):

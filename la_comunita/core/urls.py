@@ -7,8 +7,7 @@ router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'communities', views.CommunityViewSet)
 router.register(r'groups', views.GroupViewSet)
-router.register(r'private_chats', views.PrivateChatViewSet)
-router.register(r'group_chats', views.GroupChatViewSet)
+router.register(r'chats', views.ChatViewSet)
 router.register(r'messages', views.MessageViewSet)
 
 urlpatterns = [
