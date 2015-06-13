@@ -28,7 +28,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
 
 
-class PivateChatViewSet(viewsets.ModelViewSet):
+class PrivateChatViewSet(viewsets.ModelViewSet):
     """Exposes the API for the private chats."""
     queryset = PrivateChat.objects.all()
     serializer_class = PrivateChatSerializer

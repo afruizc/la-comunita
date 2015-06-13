@@ -14,17 +14,29 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
                 .HyperlinkedRelatedField(many=True,
                                          view_name='group-detail',
                                          queryset=Group.objects.all()))
-    #private_chats = serializers.HyperlinkedRelatedField(many=True,
-                                                        #view_name='privatechat-detail')
-    #group_chats = serializers.HyperlinkedRelatedField(many=True)
-    #seen_messages = serializers.HyperlinkedRelatedField(many=True)
-    #sent_messages = serializers.HyperlinkedRelatedField(many=True)
+    private_chats = (serializers
+                     .HyperlinkedRelatedField(
+                         many=True,
+                         view_name='privatechat-detail',
+                         queryset=PrivateChat.objects.all()))
+    group_chats = (serializers
+                   .HyperlinkedRelatedField(many=True,
+                                            view_name='groupchat-detail',
+                                            queryset=GroupChat.objects.all()))
+    seen_messages = (serializers
+                     .HyperlinkedRelatedField(many=True,
+                                              view_name='message-detail',
+                                              queryset=Message.objects.all()))
+    sent_messages = (serializers
+                     .HyperlinkedRelatedField(many=True,
+                                              view_name='message-detail',
+                                              queryset=Message.objects.all()))
 
     class Meta:
         model = User
         fields = ('username', 'last_login', 'communities',
-                  'c_groups',) #'private_chats', 'group_chats',
-                  #'seen_messages', 'sent_messages'
+                  'c_groups', 'private_chats', 'group_chats',
+                  'seen_messages', 'sent_messages')
 
 
 class JoinableSerializer(serializers.HyperlinkedModelSerializer):
