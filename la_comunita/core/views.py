@@ -5,7 +5,7 @@ from .models import Community
 from .serializers import CommunitySerializer, UserSerializer
 
 
-class UserViewClass(viewsets.UserSerializer):
+class UserViewClass(viewsets.ModelViewSet):
     """View that exposes the general methods for
     a user.
     """
