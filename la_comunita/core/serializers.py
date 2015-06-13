@@ -50,15 +50,13 @@ class ChatSerializer(JoinableSerializer):
     messages = serializers.HyperlinkedRelatedField(many=True,
                                                    read_only=True)
 
-    class Meta:
-        fields = ('name', 'created_on', 'users', 'messages')
-
 
 class PrivateChatSerializer(JoinableSerializer):
     """Serializer for a private chat."""
 
     class Meta:
         model = PrivateChat
+        fields = ('name', 'created_on', 'users', 'messages')
 
 
 class GroupChatSerializer(JoinableSerializer):
