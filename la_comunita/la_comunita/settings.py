@@ -37,8 +37,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework_swagger',
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_swagger',
     'core'
 )
 
@@ -54,6 +55,13 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'la_comunita.urls'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
+
 
 TEMPLATES = [
     {
