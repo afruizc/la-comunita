@@ -50,8 +50,9 @@ class CommunitySerializer(JoinableSerializer):
 class GroupSerializer(JoinableSerializer):
     """Serializer for a group."""
     community = (serializers
-                 .HyperlinkedRelatedField(read_only=True,
-                                          view_name='community-detail'))
+                 .HyperlinkedRelatedField(
+                     read_only=True,
+                     view_name='community-detail'))
 
     class Meta:
         model = Group

@@ -13,5 +13,5 @@ router.register(r'messages', views.MessageViewSet)
 
 urlpatterns = [
     url(r'^', include(router.urls)),
-    url(r'^token-auth/', obtain_auth_token)
+    url(r'^get-auth-token/', obtain_auth_token)
 ]
