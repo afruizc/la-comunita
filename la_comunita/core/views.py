@@ -1,12 +1,13 @@
 from django.contrib.auth.models import User
 from rest_framework import viewsets
+from rest_framework import permissions
 
 from .models import Community, Group, Chat, Message
 from .serializers import (CommunitySerializer, UserSerializer, GroupSerializer,
                           ChatSerializer, MessageSerializer)
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """View that exposes the general methods for
     a user.
     """
@@ -19,6 +20,8 @@ class CommunityViewSet(viewsets.ModelViewSet):
     a community."""
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
+
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
 
 
 class GroupViewSet(viewsets.ModelViewSet):
