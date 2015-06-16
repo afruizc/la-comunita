@@ -91,7 +91,7 @@ class GroupInvitationViewSet(InvitationViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-class ChatInvitationSerializer(viewsets.ModelViewSet):
+class ChatInvitationSerializer(InvitationViewSet):
     """Exposes API for chat invitations"""
     queryset = ChatInvitation.objects.all()
     serializer_class = ChatInvitationSerializer
