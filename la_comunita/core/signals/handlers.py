@@ -20,7 +20,6 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 def check_group_active(sender, instance=None, action='',
                        reverse=False, **kwargs):
     if action.startswith('post') and not reverse:
-        print('A user was added')
         if instance.users.count() >= 3:
             instance.active = True
         else:

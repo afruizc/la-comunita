@@ -68,3 +68,25 @@ class Message(models.Model):
     sender = models.ForeignKey(User, related_name='sent_messages')
     seen_by = models.ManyToManyField(User, related_name='seen_messages')
     chat = models.ForeignKey(Chat, related_name='messages')
+
+
+class Invitation(models.Model):
+    accepted = models.NullBooleanField(blank=True, null=True)
+    create_on = models.DateTimeField(auto_now_add=True)
+    inviter = models.ForeignKey(User,
+                                related_name='sent_%(class)ss')
+    invitee = models.ForeignKey(User,
+                                related_name='received_%(class)ss')
+
+    class Meta:
+        abstract = True
+
+
+class GroupInvitation(Invitation):
+    """Represents an invitation to a Group."""
+    group = models.ForeignKey(Group, related_name='invitations')
+
+
+class ChatInvitation(Invitation):
+    """Represents an invitation to a Chat."""
+    chat = models.ForeignKey(Chat, related_name='invitations')
