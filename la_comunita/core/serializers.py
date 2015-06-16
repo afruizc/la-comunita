@@ -9,23 +9,23 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     communities = (serializers
                    .HyperlinkedRelatedField(many=True,
                                             view_name='community-detail',
-                                            queryset=Community.objects.all()))
+                                            read_only=True))
     c_groups = (serializers
                 .HyperlinkedRelatedField(many=True,
                                          view_name='group-detail',
-                                         queryset=Group.objects.all()))
+                                         read_only=True))
     chats = (serializers
              .HyperlinkedRelatedField(many=True,
                                       view_name='chat-detail',
-                                      queryset=Chat.objects.all()))
+                                      read_only=True))
     seen_messages = (serializers
                      .HyperlinkedRelatedField(many=True,
                                               view_name='message-detail',
-                                              queryset=Message.objects.all()))
+                                              read_only=True))
     sent_messages = (serializers
                      .HyperlinkedRelatedField(many=True,
                                               view_name='message-detail',
-                                              queryset=Message.objects.all()))
+                                              read_only=True))
 
     class Meta:
         model = User
@@ -51,8 +51,8 @@ class GroupSerializer(JoinableSerializer):
     """Serializer for a group."""
     community = (serializers
                  .HyperlinkedRelatedField(
-                     read_only=True,
-                     view_name='community-detail'))
+                     view_name='community-detail',
+                     queryset=Community.objects.all()))
 
     class Meta:
         model = Group
@@ -64,7 +64,7 @@ class ChatSerializer(JoinableSerializer):
     messages = serializers.HyperlinkedRelatedField(many=True,
                                                    read_only=True,
                                                    view_name='message-detail')
-    group = serializers.HyperlinkedRelatedField(read_only=True,
+    group = serializers.HyperlinkedRelatedField(queryset=Group.objects.all(),
                                                 view_name='group-detail')
 
     class Meta:
@@ -75,9 +75,9 @@ class ChatSerializer(JoinableSerializer):
 class MessageSerializer(serializers.HyperlinkedModelSerializer):
     """Serializer for a message class."""
     chat = (serializers
-            .HyperlinkedRelatedField(read_only=True,
-                                     view_name='message-detail'))
-    sender = serializers.HyperlinkedRelatedField(read_only=True,
+            .HyperlinkedRelatedField(queryset=Chat.objects.all(),
+                                     view_name='chat-detail'))
+    sender = serializers.HyperlinkedRelatedField(queryset=User.objects.all(),
                                                  view_name='user-detail')
     seen_by = (serializers
                .HyperlinkedRelatedField(read_only=True,
