@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import Community, Group, Chat, Message
+from .models import (Community, Group, Chat, Message, Invitation,
+                     GroupInvitation, ChatInvitation)
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -87,3 +88,38 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Message
         fields = ('url', 'content', 'date_sent', 'sender', 'seen_by', 'chat')
+
+
+class InvitationSeralizer(serializers.HyperlinkedModelSerializer):
+    """Serializer for an invitation"""
+    inviter = (serializers
+               .HyperlinkedRelatedField(queryset=User.objects.all(),
+                                        view_name='user-detail'))
+    invitee = (serializers
+               .HyperlinkedRelatedField(queryset=User.objects.all(),
+                                        view_name='user-detail'))
+
+    class Meta:
+        model = Invitation
+
+
+class GroupInvitationSerializer(InvitationSeralizer):
+    """Serializer for a Group Invitation"""
+    group = (serializers
+             .HyperlinkedRelatedField(queryset=Group.objects.all(),
+                                      view_name='group-detail'))
+
+    class Meta:
+        model = GroupInvitation
+        fields = ('url', 'inviter', 'invitee', 'created_on', 'group')
+
+
+class ChatInvitationSerializer(InvitationSeralizer):
+    """Serializer for a Chat Invitation"""
+    chat = (serializers
+            .HyperlinkedRelatedField(queryset=Chat.objects.all(),
+                                     view_name='chat-detail'))
+
+    class Meta:
+        model = ChatInvitation
+        fields = ('url', 'inviter', 'invitee', 'created_on', 'chat')

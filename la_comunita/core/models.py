@@ -72,7 +72,7 @@ class Message(models.Model):
 
 class Invitation(models.Model):
     accepted = models.NullBooleanField(blank=True, null=True)
-    create_on = models.DateTimeField(auto_now_add=True)
+    created_on = models.DateTimeField(auto_now_add=True)
     inviter = models.ForeignKey(User,
                                 related_name='sent_%(class)ss')
     invitee = models.ForeignKey(User,
