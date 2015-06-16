@@ -1,5 +1,8 @@
 from django.contrib.auth.models import User
+from rest_framework.decorators import detail_route
+from rest_framework.response import Response
 from rest_framework import viewsets
+from rest_framework import status
 
 from .models import (Community, Group, Chat, Message, GroupInvitation,
                      ChatInvitation)
@@ -56,14 +59,36 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer.save(sender=self.request.user)
 
 
-class GroupInvitationViewSet(viewsets.ModelViewSet):
-    """Exposes API for Group Invitations"""
-    queryset = GroupInvitation.objects.all()
-    serializer_class = GroupInvitationSerializer
+class InvitationViewSet(viewsets.ModelViewSet):
+    """Parent class to abstract operations performed
+    over an Invitation."""
 
     def perform_create(self, serializer):
         """Sets the inviter to be the current user."""
         serializer.save(inviter=self.request.user)
+
+    @detail_route(methods=['post'])
+    def reject(self, request, pk=None):
+        invite_obj = self.get_object()
+        invite_obj.accepted = False
+        invite_obj.save()
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class GroupInvitationViewSet(InvitationViewSet):
+    """Exposes API for Group Invitations"""
+    queryset = GroupInvitation.objects.all()
+    serializer_class = GroupInvitationSerializer
+
+    @detail_route(methods=['post'])
+    def accept(self, request, pk=None):
+        invite_obj = self.get_object()
+        invite_obj.accepted = True
+        invite_obj.group.users.add(request.user)
+        invite_obj.save()
+
+        return Response(status=status.HTTP_200_OK)
 
 
 class ChatInvitationSerializer(viewsets.ModelViewSet):
@@ -71,6 +96,11 @@ class ChatInvitationSerializer(viewsets.ModelViewSet):
     queryset = ChatInvitation.objects.all()
     serializer_class = ChatInvitationSerializer
 
-    def perform_create(self, serializer):
-        """Sets the inviter to be the current user."""
-        serializer.save(inviter=self.request.user)
+    @detail_route(methods=['post'])
+    def accept(self, request, pk=None):
+        invite_obj = self.get_object()
+        invite_obj.accepted = True
+        invite_obj.chat.users.add(request.user)
+        invite_obj.save()
+
+        return Response(status=status.HTTP_200_OK)
