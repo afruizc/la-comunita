@@ -10,6 +10,8 @@ router.register(r'communities', views.CommunityViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'chats', views.ChatViewSet)
 router.register(r'messages', views.MessageViewSet)
+router.register(r'groupinvitations', views.GroupInvitationViewSet)
+router.register(r'chatinvitations', views.ChatInvitationViewSet)
 
 urlpatterns = [
     url(r'^', include(router.urls)),

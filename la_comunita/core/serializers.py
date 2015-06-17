@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import (Community, Group, Chat, Message, Invitation,
+from .models import (Community, Group, Chat, Message,
                      GroupInvitation, ChatInvitation)
 
 
@@ -98,9 +98,6 @@ class InvitationSeralizer(serializers.HyperlinkedModelSerializer):
     invitee = (serializers
                .HyperlinkedRelatedField(queryset=User.objects.all(),
                                         view_name='user-detail'))
-
-    class Meta:
-        model = Invitation
 
 
 class GroupInvitationSerializer(InvitationSeralizer):
