@@ -5,13 +5,15 @@ from rest_framework.authtoken.views import obtain_auth_token
 from core import views
 
 router = DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'communities', views.CommunityViewSet)
-router.register(r'groups', views.GroupViewSet)
-router.register(r'chats', views.ChatViewSet)
-router.register(r'messages', views.MessageViewSet)
-router.register(r'groupinvitations', views.GroupInvitationViewSet)
-router.register(r'chatinvitations', views.ChatInvitationViewSet)
+router.register(r'users', views.UserViewSet, 'user')
+router.register(r'communities', views.CommunityViewSet, 'community')
+router.register(r'groups', views.GroupViewSet, 'group')
+router.register(r'chats', views.ChatViewSet, 'chat')
+router.register(r'messages', views.MessageViewSet, 'message')
+router.register(r'groupinvitations', views.GroupInvitationViewSet,
+                'groupinvitation')
+router.register(r'chatinvitations', views.ChatInvitationViewSet,
+                'chatinvitation')
 
 urlpatterns = [
     url(r'^', include(router.urls)),

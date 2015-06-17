@@ -23,9 +23,15 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 class CommunityViewSet(viewsets.ModelViewSet):
     """View that exposes the general methods for
     a community."""
-    queryset = Community.objects.all()
     serializer_class = CommunitySerializer
     permissions_classes = (BelongsTo,)
+
+    def get_queryset(self):
+        """Returns the communities to which the
+        current user belongs to.
+        """
+        user = self.request.user
+        return Community.objects.filter(users=user)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
