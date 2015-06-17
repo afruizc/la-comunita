@@ -9,6 +9,7 @@ from .models import (Community, Group, Chat, Message, GroupInvitation,
 from .serializers import (CommunitySerializer, UserSerializer, GroupSerializer,
                           GroupInvitationSerializer, ChatInvitationSerializer,
                           ChatSerializer, MessageSerializer)
+from .permissions import BelongsTo
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -24,12 +25,14 @@ class CommunityViewSet(viewsets.ModelViewSet):
     a community."""
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
+    permissions_classes = (BelongsTo,)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
     """View that exposes the API for the groups."""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    permissions_classes = (BelongsTo,)
 
     def perform_create(self, serializer):
         """Adds the user that created the group
@@ -43,6 +46,7 @@ class ChatViewSet(viewsets.ModelViewSet):
     """Exposes the API for the private chats."""
     queryset = Chat.objects.all()
     serializer_class = ChatSerializer
+    permissions_classes = (BelongsTo,)
 
     def perform_create(self, serializer):
         c_obj = serializer.save()
