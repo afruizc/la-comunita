@@ -65,7 +65,6 @@ class InvitationViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Sets the inviter to be the current user."""
-        print('-------------- Saved one --------------')
         serializer.save(inviter=self.request.user)
 
     @detail_route(methods=['post'])
@@ -77,15 +76,10 @@ class InvitationViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-class GroupInvitationViewSet(viewsets.ModelViewSet):
+class GroupInvitationViewSet(InvitationViewSet):
     """Exposes API for Group Invitations"""
     queryset = GroupInvitation.objects.all()
     serializer_class = GroupInvitationSerializer
-
-    def perform_create(self, serializer):
-        """Sets the inviter to be the current user."""
-        print('-------------- Saved one --------------')
-        serializer.save(inviter=self.request.user)
 
     @detail_route(methods=['post'])
     def accept(self, request, pk=None):

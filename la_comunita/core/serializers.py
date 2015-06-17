@@ -93,7 +93,7 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
 class InvitationSeralizer(serializers.HyperlinkedModelSerializer):
     """Serializer for an invitation"""
     inviter = (serializers
-               .HyperlinkedRelatedField(queryset=User.objects.all(),
+               .HyperlinkedRelatedField(read_only=True,
                                         view_name='user-detail'))
     invitee = (serializers
                .HyperlinkedRelatedField(queryset=User.objects.all(),
@@ -109,6 +109,7 @@ class GroupInvitationSerializer(InvitationSeralizer):
     class Meta:
         model = GroupInvitation
         fields = ('url', 'inviter', 'invitee', 'created_on', 'group')
+        read_only_fields = ('inviter',)
 
 
 class ChatInvitationSerializer(InvitationSeralizer):
@@ -120,3 +121,4 @@ class ChatInvitationSerializer(InvitationSeralizer):
     class Meta:
         model = ChatInvitation
         fields = ('url', 'inviter', 'invitee', 'created_on', 'chat')
+        read_only_fields = ('inviter',)
