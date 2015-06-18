@@ -1,3 +1,5 @@
+import itertools
+
 from django.contrib.auth.models import User
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
@@ -40,6 +42,12 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
     permissions_classes = (BelongsTo,)
 
+    def get_queryset(self):
+        """Filters the groups based on the user
+        that is logged in."""
+        user = self.request.user
+        return Group.objects.filter(users=user)
+
     def perform_create(self, serializer):
         """Adds the user that created the group
         as a member.
@@ -54,6 +62,12 @@ class ChatViewSet(viewsets.ModelViewSet):
     serializer_class = ChatSerializer
     permissions_classes = (BelongsTo,)
 
+    def get_queryset(self):
+        """Filters the chats based on the user
+        that is logged in."""
+        user = self.request.user
+        return Chat.objects.filter(users=user)
+
     def perform_create(self, serializer):
         c_obj = serializer.save()
         c_obj.users.add(self.request.user)
@@ -63,6 +77,12 @@ class MessageViewSet(viewsets.ModelViewSet):
     """Exposes API for messages."""
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        """Filters the chats based on the user
+        that is logged in."""
+        user = self.request.user
+        return Chat.objects.filter(users=user)
 
     def perform_create(self, serializer):
         """Sets the sender to be the current user."""
@@ -100,6 +120,15 @@ class GroupInvitationViewSet(InvitationViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
+    def get_queryset(self):
+        """Filters the invitations based on the user
+        that is logged in.
+        """
+        user = self.request.user
+        return itertools.chain(
+            GroupInvitation.objects.filter(inviter=user),
+            GroupInvitation.objects.filter(invitee=user))
+
 
 class ChatInvitationViewSet(InvitationViewSet):
     """Exposes API for chat invitations"""
@@ -114,3 +143,12 @@ class ChatInvitationViewSet(InvitationViewSet):
         invite_obj.save()
 
         return Response(status=status.HTTP_200_OK)
+
+    def get_queryset(self):
+        """Filters the invitations based on the user
+        that is logged in.
+        """
+        user = self.request.user
+        return itertools.chain(
+            ChatInvitation.objects.filter(inviter=user),
+            ChatInvitation.objects.filter(invitee=user))
