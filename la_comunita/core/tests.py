@@ -153,22 +153,26 @@ class TestChatInvitation(APITestCase):
         self.user = User.objects.get(username='user1')
         token = Token.objects.get(user=self.user).key
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
-        invitee = User.objects.get(username='test1')
+        self.invitee = User.objects.get(username='test1')
         self.invitation = ChatInvitation.objects.create(
             inviter=self.user,
-            invitee=invitee,
+            invitee=self.invitee,
             chat=c)
 
     def test_user_accept_invitation(self):
+        new_token = Token.objects.get(user=self.invitee).key
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + new_token)
         response = self.client.post('/chatinvitations/%d/accept/' %
                                     self.invitation.id)
         self.assertEquals(response.status_code, 200)
         self.assertTrue(self.invitation.accepted)
-        self.assertIn(self.invitation.chat, self.user.chats.all())
+        self.assertIn(self.invitation.chat, self.invitee.chats.all())
 
     def test_reject_invitation(self):
+        new_token = Token.objects.get(user=self.invitee).key
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + new_token)
         response = self.client.post('/chatinvitations/%d/reject/' %
                                     self.invitation.id)
         self.assertEquals(response.status_code, 200)
         self.assertFalse(self.invitation.accepted)
-        self.assertNotIn(self.invitation.chat, self.user.chats.all())
+        self.assertNotIn(self.invitation.chat, self.invitee.chats.all())

@@ -108,7 +108,8 @@ class GroupInvitationSerializer(InvitationSeralizer):
 
     class Meta:
         model = GroupInvitation
-        fields = ('url', 'inviter', 'invitee', 'created_on', 'group')
+        fields = ('url', 'accepted', 'inviter', 'invitee', 'created_on',
+                  'group')
         read_only_fields = ('inviter',)
 
 
@@ -120,5 +121,6 @@ class ChatInvitationSerializer(InvitationSeralizer):
 
     class Meta:
         model = ChatInvitation
-        fields = ('url', 'inviter', 'invitee', 'created_on', 'chat')
+        fields = ('url', 'accepted', 'inviter', 'invitee', 'created_on',
+                  'chat')
         read_only_fields = ('inviter',)
