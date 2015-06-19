@@ -6,23 +6,19 @@ from core.models import (User, Group, Community, Chat,
                          Message, ChatInvitation, GroupInvitation)
 
 
-def populate_database():
-    User.objects.create_user('test1', 'test1@test.t', 'test1')
-
-    u = User.objects.create_user('user1', 'user1@test.t', 'user1')
-    c = Community.objects.create(name='community1')
-    g = Group.objects.create(name='group1', community=c)
-    c = Chat.objects.create(name='group_chat1', group=g)
-    Message.objects.create(content='test', sender=u,
-                           chat=c)
-
-
 class TestUserAssociationWithJoinableFromUrls(APITestCase):
     """User being associated with the entities she
     creates."""
 
     def setUp(self):
-        populate_database()
+        User.objects.create_user('test1', 'test1@test.t', 'test1')
+
+        u = User.objects.create_user('user1', 'user1@test.t', 'user1')
+        c = Community.objects.create(name='community1')
+        g = Group.objects.create(name='group1', community=c)
+        c = Chat.objects.create(name='group_chat1', group=g)
+        Message.objects.create(content='test', sender=u,
+                               chat=c)
         self.user = User.objects.get(username='user1')
         self.token = Token.objects.get(user=self.user).key
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
@@ -96,3 +92,88 @@ class TestUserAssociationWithJoinableFromUrls(APITestCase):
         chat_invitation = ChatInvitation.objects.filter(inviter=self.user)
         self.assertEquals(response.status_code, 201)
         self.assertTrue(chat_invitation.exists())
+
+
+class TestFilterEntitiesByLoggedUser(APITestCase):
+    """Only the entities associated with the current user
+    are returned.
+    """
+
+    def setUp(self):
+        tu1 = User.objects.create_user('test1', 'test1@test.t', 'test1')
+        tu2 = User.objects.create_user('test2', 'test2@test.t', 'test2')
+        # tu3 = User.objects.create_user('test3', 'test2@test.t', 'test3')
+
+        u = User.objects.create_user('user1', 'user1@test.t', 'user1')
+        c = Community.objects.create(name='community1')
+        c.users.add(u, tu1, tu2)
+        g = Group.objects.create(name='group1', community=c)
+        self.c = c
+        c = Chat.objects.create(name='group_chat1', group=g)
+        c.users.add(u, tu1, tu2)
+        Message.objects.create(content='test', sender=u,
+                               chat=c)
+        self.user = User.objects.get(username='user1')
+        self.token = Token.objects.get(user=self.user).key
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
+
+    def test_get_communities_of_logged_user(self):
+        """Returns communities of the logged user"""
+        response = self.client.get('/communities/')
+        communities_response = [x['url'] for x in response.data['results']]
+        communities_user = ['http://testserver/communities/%d/' % x.id
+                            for x in self.user.communities.all()]
+        self.assertListEqual(communities_response, communities_user)
+
+    def test_groups_of_logged_user(self):
+        """Returns groups of the logged user."""
+        url_c = reverse('community-list') + '%d/'
+        for i in range(3):
+            with self.subTest(i=i):
+                data = {'name': 'group_test%d' % i,
+                        'community': url_c % self.c.id}
+                response = self.client.post('/groups/', data=data)
+                self.assertEquals(response.status_code, 201)
+
+        response = self.client.get('/groups/')
+        groups_response = [x['url'] for x in response.data['results']]
+        groups_user = ['http://testserver/groups/%d/' % x.id
+                       for x in self.user.c_groups.all()]
+        self.assertListEqual(groups_response, groups_user)
+
+
+class TestChatInvitation(APITestCase):
+    """Mechanics for accepting and rejecting invitations."""
+
+    def setUp(self):
+        User.objects.create_user('test1', 't@t.t', 'test1')
+        u = User.objects.create_user('user1', 'u@u.u', 'user1')
+        c = Chat.objects.create(name='chat1')
+
+        self.user = User.objects.get(username='user1')
+        token = Token.objects.get(user=self.user).key
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+        invitee = User.objects.get(username='test1')
+        ChatInvitation.objects.create(inviter=self.user,
+                                      invitee=invitee,
+                                      chat=c)
+
+    def _get_chat_inv_obj_and_url(self):
+        """Returns the chat object and url."""
+        request = self.client.get('/chatinvitations/')
+        self.assertEquals(request.status_code, 200)
+        chat_inv_url = request.data['results'][0]['url']
+        chat_inv_obj = ChatInvitation.objects.get(inviter=self.user)
+        return (chat_inv_url, chat_inv_obj)
+
+    def test_user_accept_invitation(self):
+        c_url, c_obj = self._get_chat_inv_obj_and_url()
+        self.client.post(c_url + 'accept/')
+        self.assertTrue(c_obj.accepted)
+        self.assertIn(c_obj.chat, self.user.chats)
+
+    def test_reject_invitation(self):
+        c_url, c_obj = self._get_chat_inv_obj_and_url()
+        self.client.post(c_url + 'reject/')
+        self.assertFalse(c_obj.accepted)
+        self.assertNotIn(c_obj.chat, self.user.chats)

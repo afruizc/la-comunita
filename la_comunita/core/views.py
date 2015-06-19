@@ -149,6 +149,6 @@ class ChatInvitationViewSet(InvitationViewSet):
         that is logged in.
         """
         user = self.request.user
-        return itertools.chain(
+        return list(itertools.chain(
             ChatInvitation.objects.filter(inviter=user),
-            ChatInvitation.objects.filter(invitee=user))
+            ChatInvitation.objects.filter(invitee=user)))
