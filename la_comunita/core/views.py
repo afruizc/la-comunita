@@ -58,7 +58,6 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 class ChatViewSet(viewsets.ModelViewSet):
     """Exposes the API for the private chats."""
-    queryset = Chat.objects.all()
     serializer_class = ChatSerializer
     permissions_classes = (BelongsTo,)
 
@@ -75,7 +74,6 @@ class ChatViewSet(viewsets.ModelViewSet):
 
 class MessageViewSet(viewsets.ModelViewSet):
     """Exposes API for messages."""
-    queryset = Message.objects.all()
     serializer_class = MessageSerializer
 
     def get_queryset(self):
@@ -108,7 +106,6 @@ class InvitationViewSet(viewsets.ModelViewSet):
 
 class GroupInvitationViewSet(InvitationViewSet):
     """Exposes API for Group Invitations"""
-    queryset = GroupInvitation.objects.all()
     serializer_class = GroupInvitationSerializer
 
     @detail_route(methods=['post'])
@@ -125,14 +122,13 @@ class GroupInvitationViewSet(InvitationViewSet):
         that is logged in.
         """
         user = self.request.user
-        return itertools.chain(
+        return list(itertools.chain(
             GroupInvitation.objects.filter(inviter=user),
-            GroupInvitation.objects.filter(invitee=user))
+            GroupInvitation.objects.filter(invitee=user)))
 
 
 class ChatInvitationViewSet(InvitationViewSet):
     """Exposes API for chat invitations"""
-    queryset = ChatInvitation.objects.all()
     serializer_class = ChatInvitationSerializer
 
     @detail_route(methods=['post'])
@@ -141,6 +137,7 @@ class ChatInvitationViewSet(InvitationViewSet):
         invite_obj.accepted = True
         invite_obj.chat.users.add(request.user)
         invite_obj.save()
+        print('Saved')
 
         return Response(status=status.HTTP_200_OK)
 

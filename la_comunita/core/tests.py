@@ -1,3 +1,5 @@
+import pdb
+
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
@@ -160,20 +162,26 @@ class TestChatInvitation(APITestCase):
 
     def _get_chat_inv_obj_and_url(self):
         """Returns the chat object and url."""
-        request = self.client.get('/chatinvitations/')
-        self.assertEquals(request.status_code, 200)
-        chat_inv_url = request.data['results'][0]['url']
+        response = self.client.get('/chatinvitations/')
+        self.assertEquals(response.status_code, 200)
+        chat_inv_url = response.data['results'][0]['url']
         chat_inv_obj = ChatInvitation.objects.get(inviter=self.user)
         return (chat_inv_url, chat_inv_obj)
 
     def test_user_accept_invitation(self):
         c_url, c_obj = self._get_chat_inv_obj_and_url()
-        self.client.post(c_url + 'accept/')
+        pdb.set_trace()
+        print(c_url + 'accept/')
+        response = self.client.post(c_url + 'accept/')
+        print(response.data)
+        self.assertEquals(response.status_code, 200)
         self.assertTrue(c_obj.accepted)
-        self.assertIn(c_obj.chat, self.user.chats)
+        self.assertIn(c_obj.chat, self.user.chats.all())
 
     def test_reject_invitation(self):
         c_url, c_obj = self._get_chat_inv_obj_and_url()
-        self.client.post(c_url + 'reject/')
+        print(c_url + 'reject/')
+        response = self.client.post(c_url + 'reject/')
+        self.assertEquals(response.status_code, 200)
         self.assertFalse(c_obj.accepted)
-        self.assertNotIn(c_obj.chat, self.user.chats)
+        self.assertNotIn(c_obj.chat, self.user.chats.all())
