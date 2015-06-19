@@ -1,5 +1,3 @@
-import pdb
-
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
@@ -156,32 +154,21 @@ class TestChatInvitation(APITestCase):
         token = Token.objects.get(user=self.user).key
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
         invitee = User.objects.get(username='test1')
-        ChatInvitation.objects.create(inviter=self.user,
-                                      invitee=invitee,
-                                      chat=c)
-
-    def _get_chat_inv_obj_and_url(self):
-        """Returns the chat object and url."""
-        response = self.client.get('/chatinvitations/')
-        self.assertEquals(response.status_code, 200)
-        chat_inv_url = response.data['results'][0]['url']
-        chat_inv_obj = ChatInvitation.objects.get(inviter=self.user)
-        return (chat_inv_url, chat_inv_obj)
+        self.invitation = ChatInvitation.objects.create(
+            inviter=self.user,
+            invitee=invitee,
+            chat=c)
 
     def test_user_accept_invitation(self):
-        c_url, c_obj = self._get_chat_inv_obj_and_url()
-        pdb.set_trace()
-        print(c_url + 'accept/')
-        response = self.client.post(c_url + 'accept/')
-        print(response.data)
+        response = self.client.post('/chatinvitations/%d/accept/' %
+                                    self.invitation.id)
         self.assertEquals(response.status_code, 200)
-        self.assertTrue(c_obj.accepted)
-        self.assertIn(c_obj.chat, self.user.chats.all())
+        self.assertTrue(self.invitation.accepted)
+        self.assertIn(self.invitation.chat, self.user.chats.all())
 
     def test_reject_invitation(self):
-        c_url, c_obj = self._get_chat_inv_obj_and_url()
-        print(c_url + 'reject/')
-        response = self.client.post(c_url + 'reject/')
+        response = self.client.post('/chatinvitations/%d/reject/' %
+                                    self.invitation.id)
         self.assertEquals(response.status_code, 200)
-        self.assertFalse(c_obj.accepted)
-        self.assertNotIn(c_obj.chat, self.user.chats.all())
+        self.assertFalse(self.invitation.accepted)
+        self.assertNotIn(self.invitation.chat, self.user.chats.all())

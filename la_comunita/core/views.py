@@ -1,5 +1,3 @@
-import itertools
-
 from django.contrib.auth.models import User
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
@@ -80,7 +78,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         """Filters the chats based on the user
         that is logged in."""
         user = self.request.user
-        return Chat.objects.filter(users=user)
+        return Message.objects.filter(users=user)
 
     def perform_create(self, serializer):
         """Sets the sender to be the current user."""
@@ -122,9 +120,9 @@ class GroupInvitationViewSet(InvitationViewSet):
         that is logged in.
         """
         user = self.request.user
-        return list(itertools.chain(
-            GroupInvitation.objects.filter(inviter=user),
-            GroupInvitation.objects.filter(invitee=user)))
+        return (
+            GroupInvitation.objects.filter(inviter=user) |
+            GroupInvitation.objects.filter(invitee=user))
 
 
 class ChatInvitationViewSet(InvitationViewSet):
@@ -137,6 +135,7 @@ class ChatInvitationViewSet(InvitationViewSet):
         invite_obj.accepted = True
         invite_obj.chat.users.add(request.user)
         invite_obj.save()
+        print(invite_obj.accepted)
         print('Saved')
 
         return Response(status=status.HTTP_200_OK)
@@ -146,6 +145,6 @@ class ChatInvitationViewSet(InvitationViewSet):
         that is logged in.
         """
         user = self.request.user
-        return list(itertools.chain(
-            ChatInvitation.objects.filter(inviter=user),
-            ChatInvitation.objects.filter(invitee=user)))
+        return (
+            ChatInvitation.objects.filter(inviter=user) |
+            ChatInvitation.objects.filter(invitee=user))
