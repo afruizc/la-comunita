@@ -202,3 +202,40 @@ class TestChatAcceptRejectInvitation(APITestCase):
         token = Token.objects.get(user__username='user1').key
         response, invitation = self.perform_action('accept', token)
         self.assertEquals(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class TestSentReceivedChatInvitations(APITestCase):
+    """Tests views for gettting the invitations that a user has
+    sent and received. Same as before, we only test `ChatInvitation`"""
+
+    def setUp(self):
+        """Create 3 users, u1, u2 and u3. Each one of these is going
+        to send 2 invitations to the other two, so in total, every
+        user will have 2 sent invitations and 2 received invitations."""
+        self.u1 = User.objects.create_user('u1', 'u1@u1.u1', 'u1')
+        self.u2 = User.objects.create_user('u2', 'u2@u2.u2', 'u1')
+        c = Chat.objects.create(name='c1')
+        ChatInvitation.objects.create(
+            inviter=self.u1,
+            invitee=self.u2,
+            chat=c
+        )
+
+    def check_invitations(self, user, type_):
+        """Checks that the specific type of invitations belong to
+        the user."""
+        t = Token.objects.get(user=user).key
+        should_be = ['http://testserver/chatinvitations/1/']
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + t)
+        response = self.client.get('/chatinvitations/%s/' % type_)
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        received = response.data['results']
+        self.assertListEqual(should_be, received)
+
+    def test_sent_invitations(self):
+        """User sees received invitations."""
+        self.check_invitations(self.u1, 'sent')
+
+    def test_received_invitations(self):
+        """User sees sent invitations."""
+        self.check_invitations(self.u2, 'received')
