@@ -101,6 +101,13 @@ class InvitationViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
+    def accept(self, request, pk=None):
+        invite_obj = self.get_object()
+        invite_obj.accepted = True
+        invite_obj.save()
+
+        return invite_obj
+
 
 class GroupInvitationViewSet(InvitationViewSet):
     """Exposes API for Group Invitations"""
@@ -108,12 +115,15 @@ class GroupInvitationViewSet(InvitationViewSet):
 
     @detail_route(methods=['post'])
     def accept(self, request, pk=None):
-        invite_obj = self.get_object()
-        invite_obj.accepted = True
+        if request.user != self.get_object().invitee:
+            message = "User can't accept this invitation"
+            return Response(data={'detail': message},
+                            status=status.HTTP_403_FORBIDDEN)
+        invite_obj = super().accept(request, pk)
         invite_obj.group.users.add(request.user)
-        invite_obj.save()
-
-        return Response(status=status.HTTP_200_OK)
+        msg = 'Group successfully joined'
+        return Response(data={'detail': msg},
+                        status=status.HTTP_200_OK)
 
     def get_queryset(self):
         """Filters the invitations based on the user
@@ -131,14 +141,16 @@ class ChatInvitationViewSet(InvitationViewSet):
 
     @detail_route(methods=['post'])
     def accept(self, request, pk=None):
-        invite_obj = self.get_object()
-        invite_obj.accepted = True
-        invite_obj.chat.users.add(request.user)
-        invite_obj.save()
-        print(invite_obj.accepted)
-        print('Saved')
+        if request.user != self.get_object().invitee:
+            message = "User can't accept this invitation"
+            return Response(data={'detail': message},
+                            status=status.HTTP_403_FORBIDDEN)
 
-        return Response(status=status.HTTP_200_OK)
+        invite_obj = super().accept(request, pk)
+        invite_obj.chat.users.add(request.user)
+        msg = 'Group successfully joined'
+        return Response(data={'detail': msg},
+                        status=status.HTTP_200_OK)
 
     def get_queryset(self):
         """Filters the invitations based on the user
