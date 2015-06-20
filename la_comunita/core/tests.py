@@ -147,7 +147,6 @@ class TestChatInvitation(APITestCase):
 
     def setUp(self):
         User.objects.create_user('test1', 't@t.t', 'test1')
-        u = User.objects.create_user('user1', 'u@u.u', 'user1')
         c = Chat.objects.create(name='chat1')
 
         self.user = User.objects.get(username='user1')
@@ -177,6 +176,6 @@ class TestChatInvitation(APITestCase):
                                     self.invitation.id)
         self.assertEquals(response.status_code, 200)
         self.assertFalse(self.invitee
-                        .received_chatinvitations.first()
-                        .accepted)
+                         .received_chatinvitations.first()
+                         .accepted)
         self.assertNotIn(self.invitation.chat, self.invitee.chats.all())

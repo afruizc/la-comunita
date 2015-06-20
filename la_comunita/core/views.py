@@ -4,8 +4,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import status
 
-from .models import (Community, Group, Chat, Message, GroupInvitation,
-                     ChatInvitation)
+from .models import (Community, Group, Chat, Message)
 from .serializers import (CommunitySerializer, UserSerializer, GroupSerializer,
                           GroupInvitationSerializer, ChatInvitationSerializer,
                           ChatSerializer, MessageSerializer)
