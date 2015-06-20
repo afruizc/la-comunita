@@ -101,12 +101,39 @@ class InvitationViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
-    def accept(self, request, pk=None):
-        invite_obj = self.get_object()
-        invite_obj.accepted = True
-        invite_obj.save()
+    def accept(self, request, attr, pk=None):
+        """Accepts an invitation from the user that is logged in.
+        If the user that is logged in is different than the
+        invitee, it returns a 403 Forbidden and aborts.
 
+        :param request: The request to this url.
+        :type request: ..class:`rest_framework.Request`.
+        :param attr: The entitiy that the invitation was sent
+                     for, for example, a chat or a group.
+        :type attr: str."""
+        invite_obj = self.get_object()
+        if request.user != invite_obj.invitee:
+            message = "User can't accept this invitation"
+            return Response(data={'detail': message},
+                            status=status.HTTP_403_FORBIDDEN)
+        invite_obj.accepted = True
+        invited_to = invite_obj.__getattribute__(attr)
+        invited_to.users.add(request.user)
+        invite_obj.save()
+        msg = '%s successfully joined' % attr.capitalize()
+        return Response(data={'detail': msg},
+                        status=status.HTTP_200_OK)
         return invite_obj
+
+    def get_queryset(self):
+        """Filters the invitations based on the user
+        that is logged in.
+        """
+        user = self.request.user
+        model = self.serializer_class.Meta.model
+        return (
+            model.objects.filter(inviter=user) |
+            model.objects.filter(invitee=user))
 
 
 class GroupInvitationViewSet(InvitationViewSet):
@@ -115,24 +142,7 @@ class GroupInvitationViewSet(InvitationViewSet):
 
     @detail_route(methods=['post'])
     def accept(self, request, pk=None):
-        if request.user != self.get_object().invitee:
-            message = "User can't accept this invitation"
-            return Response(data={'detail': message},
-                            status=status.HTTP_403_FORBIDDEN)
-        invite_obj = super().accept(request, pk)
-        invite_obj.group.users.add(request.user)
-        msg = 'Group successfully joined'
-        return Response(data={'detail': msg},
-                        status=status.HTTP_200_OK)
-
-    def get_queryset(self):
-        """Filters the invitations based on the user
-        that is logged in.
-        """
-        user = self.request.user
-        return (
-            GroupInvitation.objects.filter(inviter=user) |
-            GroupInvitation.objects.filter(invitee=user))
+        return super().accept(request, 'group', pk)
 
 
 class ChatInvitationViewSet(InvitationViewSet):
@@ -141,22 +151,4 @@ class ChatInvitationViewSet(InvitationViewSet):
 
     @detail_route(methods=['post'])
     def accept(self, request, pk=None):
-        if request.user != self.get_object().invitee:
-            message = "User can't accept this invitation"
-            return Response(data={'detail': message},
-                            status=status.HTTP_403_FORBIDDEN)
-
-        invite_obj = super().accept(request, pk)
-        invite_obj.chat.users.add(request.user)
-        msg = 'Group successfully joined'
-        return Response(data={'detail': msg},
-                        status=status.HTTP_200_OK)
-
-    def get_queryset(self):
-        """Filters the invitations based on the user
-        that is logged in.
-        """
-        user = self.request.user
-        return (
-            ChatInvitation.objects.filter(inviter=user) |
-            ChatInvitation.objects.filter(invitee=user))
+        return super().accept(request, 'chat', pk)

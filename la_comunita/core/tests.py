@@ -165,7 +165,9 @@ class TestChatInvitation(APITestCase):
         response = self.client.post('/chatinvitations/%d/accept/' %
                                     self.invitation.id)
         self.assertEquals(response.status_code, 200)
-        self.assertTrue(self.invitation.accepted)
+        self.assertTrue(self.invitee
+                        .received_chatinvitations.first()
+                        .accepted)
         self.assertIn(self.invitation.chat, self.invitee.chats.all())
 
     def test_reject_invitation(self):
@@ -174,5 +176,7 @@ class TestChatInvitation(APITestCase):
         response = self.client.post('/chatinvitations/%d/reject/' %
                                     self.invitation.id)
         self.assertEquals(response.status_code, 200)
-        self.assertFalse(self.invitation.accepted)
+        self.assertFalse(self.invitee
+                        .received_chatinvitations.first()
+                        .accepted)
         self.assertNotIn(self.invitation.chat, self.invitee.chats.all())
