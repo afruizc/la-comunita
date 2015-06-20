@@ -1,6 +1,7 @@
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
+from rest_framework import status
 
 from core.models import (User, Group, Community, Chat,
                          Message, ChatInvitation, GroupInvitation)
@@ -142,14 +143,17 @@ class TestFilterEntitiesByLoggedUser(APITestCase):
         self.assertListEqual(groups_response, groups_user)
 
 
-class TestChatInvitation(APITestCase):
-    """Mechanics for accepting and rejecting invitations."""
+class TestChatAcceptRejectInvitation(APITestCase):
+    """Mechanics for accepting and rejecting invitations. Due
+    to the fact that GroupInvitation and ChatInvitation share
+    a lot of behavior, only the latter class is tested. The former,
+    by extension, is assumed to be correct.
+    """
 
     def setUp(self):
         User.objects.create_user('test1', 't@t.t', 'test1')
         c = Chat.objects.create(name='chat1')
-
-        self.user = User.objects.get(username='user1')
+        self.user = User.objects.create_user('user1', 'u@u.u', 'user1')
         token = Token.objects.get(user=self.user).key
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
         self.invitee = User.objects.get(username='test1')
@@ -158,24 +162,43 @@ class TestChatInvitation(APITestCase):
             invitee=self.invitee,
             chat=c)
 
-    def test_user_accept_invitation(self):
-        new_token = Token.objects.get(user=self.invitee).key
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + new_token)
-        response = self.client.post('/chatinvitations/%d/accept/' %
-                                    self.invitation.id)
-        self.assertEquals(response.status_code, 200)
-        self.assertTrue(self.invitee
-                        .received_chatinvitations.first()
-                        .accepted)
+    def perform_action(self, action, token):
+        """Performs the given action to an invitation.
+
+        :param action: action taken with respect to the invitation.
+                       (accept/reject and invitation).
+        :type action: str.
+        """
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+        response = self.client.post('/chatinvitations/%d/%s/' %
+                                    (self.invitation.id, action))
+        return (response, self.invitee.received_chatinvitations.get(
+            id=self.invitation.id))
+
+    def perform_action_by_invitee(self, action):
+        """Performs the given action by the invitee. This
+        uses the `perform_action` method and sets the auth
+        token for the invitee user.
+        """
+        token = Token.objects.get(user=self.invitee).key
+        response, invitation = self.perform_action(action, token)
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        return invitation
+
+    def test_accept_invitation(self):
+        """Invitee accepts the invitation"""
+        invitation = self.perform_action_by_invitee('accept')
+        self.assertTrue(invitation.accepted)
         self.assertIn(self.invitation.chat, self.invitee.chats.all())
 
     def test_reject_invitation(self):
-        new_token = Token.objects.get(user=self.invitee).key
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + new_token)
-        response = self.client.post('/chatinvitations/%d/reject/' %
-                                    self.invitation.id)
-        self.assertEquals(response.status_code, 200)
-        self.assertFalse(self.invitee
-                         .received_chatinvitations.first()
-                         .accepted)
+        """User does not accept the invitation"""
+        invitation = self.perform_action_by_invitee('reject')
+        self.assertFalse(invitation.accepted)
         self.assertNotIn(self.invitation.chat, self.invitee.chats.all())
+
+    def test_wrong_user_accepts(self):
+        """Wrong user accepts the invitation"""
+        token = Token.objects.get(user__username='user1').key
+        response, invitation = self.perform_action('accept', token)
+        self.assertEquals(response.status_code, status.HTTP_403_FORBIDDEN)

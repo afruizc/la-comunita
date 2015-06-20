@@ -94,7 +94,14 @@ class InvitationViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['post'])
     def reject(self, request, pk=None):
+        """Rejects an invitation from the user that is logged in.
+        If this user is not the invitee, a 403 Forbidden status
+        is returned to the user."""
         invite_obj = self.get_object()
+        if self.request.user != invite_obj.invitee:
+            message = "User can't reject this invitation"
+            return Response(data={'detail': message},
+                            status=status.HTTP_403_FORBIDDEN)
         invite_obj.accepted = False
         invite_obj.save()
 
