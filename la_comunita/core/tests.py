@@ -229,7 +229,7 @@ class TestSentReceivedChatInvitations(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + t)
         response = self.client.get('/chatinvitations/%s/' % type_)
         self.assertEquals(response.status_code, status.HTTP_200_OK)
-        received = response.data['results']
+        received = [x['url'] for x in response.data['results']]
         self.assertListEqual(should_be, received)
 
     def test_sent_invitations(self):
