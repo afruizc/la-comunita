@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import status
@@ -130,6 +130,33 @@ class InvitationViewSet(viewsets.ModelViewSet):
         return Response(data={'detail': msg},
                         status=status.HTTP_200_OK)
         return invite_obj
+
+    def get_invitations(self, type_):
+        """Returns the list of sent/received invitations by the
+        logged user."""
+        model = self.serializer_class.Meta.model
+        if type_ == 'sent':
+            invitations = model.objects.filter(inviter=self.request.user)
+        elif type_ == 'received':
+            invitations = model.objects.filter(invitee=self.request.user)
+        page = self.paginate_queryset(invitations)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(invitations, many=True)
+        return Response(serializer.data)
+
+    @list_route()
+    def sent(self, request):
+        """Returns the list of sent invitations by the
+        logged user."""
+        return self.get_invitations('sent')
+
+    @list_route()
+    def received(self, request):
+        """Returns the list of received invitations by the
+        logged user."""
+        return self.get_invitations('received')
 
     def get_queryset(self):
         """Filters the invitations based on the user
