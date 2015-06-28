@@ -20,7 +20,7 @@ class Joinable(models.Model):
     name = models.CharField(max_length=100)
     created_on = models.DateTimeField('creation date', auto_now_add=True)
     users = models.ManyToManyField(User)
-    picture = models.ImageField(deault='/joinable/placeholder.png')
+    picture = models.ImageField(default='/joinable/placeholder.png')
 
     class Meta:
         abstract = True
