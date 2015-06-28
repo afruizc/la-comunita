@@ -56,6 +56,7 @@ target/
 # Vim files
 .*.*.un~
 .*.*.swp
+*.un~
 
 # ipython notebook
 .ipyn*
