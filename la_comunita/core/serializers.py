@@ -45,7 +45,7 @@ class CommunitySerializer(JoinableSerializer):
 
     class Meta:
         model = Community
-        fields = ('url', 'name', 'created_on', 'users')
+        fields = ('url', 'picture', 'name', 'created_on', 'users')
 
 
 class GroupSerializer(JoinableSerializer):
@@ -57,7 +57,8 @@ class GroupSerializer(JoinableSerializer):
 
     class Meta:
         model = Group
-        fields = ('url', 'name', 'created_on', 'users', 'community')
+        fields = ('url', 'picture', 'name', 'created_on', 'users',
+                  'community')
 
 
 class ChatSerializer(JoinableSerializer):
@@ -70,7 +71,8 @@ class ChatSerializer(JoinableSerializer):
 
     class Meta:
         model = Chat
-        fields = ('url', 'name', 'created_on', 'users', 'messages', 'group')
+        fields = ('url', 'picture', 'name', 'created_on',
+                  'users', 'messages', 'group')
 
 
 class MessageSerializer(serializers.HyperlinkedModelSerializer):
