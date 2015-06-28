@@ -115,6 +115,7 @@ class TestFilterEntitiesByLoggedUser(APITestCase):
         Message.objects.create(content='test', sender=u,
                                chat=c)
         self.user = User.objects.get(username='user1')
+        print(self.user)
         self.token = Token.objects.get(user=self.user).key
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
 

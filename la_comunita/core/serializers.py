@@ -1,8 +1,8 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from .models import (Community, Group, Chat, Message,
-                     GroupInvitation, ChatInvitation)
+                     GroupInvitation, ChatInvitation,
+                     User)
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -30,8 +30,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = User
-        fields = ('url', 'username', 'last_login', 'communities',
-                  'c_groups', 'chats', 'seen_messages', 'sent_messages')
+        fields = ('url', 'profile_picture', 'chats', 'username', 'last_login',
+                  'communities', 'c_groups', 'seen_messages', 'sent_messages')
 
 
 class JoinableSerializer(serializers.HyperlinkedModelSerializer):

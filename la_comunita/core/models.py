@@ -1,5 +1,12 @@
-from django.contrib.auth.models import User
 from django.db import models
+from django.contrib.auth.models import User
+
+
+# This is the suggested fix
+# See: https://stackoverflow.com/q/1718693
+User.add_to_class('profile_picture',
+                  models.ImageField(default='profile/default.png',
+                                    upload_to='profile'))
 
 
 class Joinable(models.Model):

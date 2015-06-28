@@ -1,17 +1,16 @@
-from django.contrib.auth.models import User
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework import status
 
-from .models import (Community, Group, Chat, Message)
+from .models import (Community, Group, Chat, Message, User)
 from .serializers import (CommunitySerializer, UserSerializer, GroupSerializer,
                           GroupInvitationSerializer, ChatInvitationSerializer,
                           ChatSerializer, MessageSerializer)
 from .permissions import BelongsTo
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     """View that exposes the general methods for
     a user.
     """
