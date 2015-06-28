@@ -116,5 +116,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Media Root
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/media/'
+
 # Tests
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
