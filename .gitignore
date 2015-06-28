@@ -60,3 +60,6 @@ target/
 
 # ipython notebook
 .ipyn*
+
+# Mac files
+.DS_Store
