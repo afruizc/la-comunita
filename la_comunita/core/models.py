@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 # This is the suggested fix
 # See: https://stackoverflow.com/q/1718693
 User.add_to_class('profile_picture',
-                  models.ImageField(default='profile/default.png',
+                  models.ImageField(default='/profile/placeholder.png',
                                     upload_to='profile'))
 
 
@@ -20,6 +20,7 @@ class Joinable(models.Model):
     name = models.CharField(max_length=100)
     created_on = models.DateTimeField('creation date', auto_now_add=True)
     users = models.ManyToManyField(User)
+    picture = models.ImageField(deault='/joinable/placeholder.png')
 
     class Meta:
         abstract = True
